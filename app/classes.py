@@ -7,10 +7,9 @@ import peakutils
 from matplotlib import pyplot as plt
 from scipy.fftpack import fft, fftshift
 from scipy.signal import get_window, welch
-import audio2numpy as a2n
 
 
-class Audio_Signal():
+class AudioHandler():
     """Класс сигнала: содержит аттрибуты и методы для хранения и обработки основных характеристик сигнала
     Предназначен для поиска нот"""
 
@@ -24,11 +23,6 @@ class Audio_Signal():
         self.wx = None
         self.freq = None
         self.power = None
-
-    def load(self):
-        """Загрузка файла"""
-        # return a2n.audio_from_file(self.audio_path)
-        return librosa.load(self.audio_path)
 
     # Метод для отображения графика Амплитуда/Время
     def draw_amplitude_time_plot(self):
@@ -149,12 +143,13 @@ class Audio_Signal():
             s = librosa.hz_to_note(i, octave=True, cents=False)
             if s not in notes:
                 notes.append(s)
-
+        print("Результат обработки произведения: ", end="")
         for i in notes:
-            print(i)
+            print(i, sep=', ',  end='')
             # print(librosa.hz_to_note(i, octave=True, cents=False))
 
-    def audio_handler(self):
+    # Вызов всех методов обработки сигнала
+    def audio_handler_run(self):
         self.draw_amplitude_time_plot()
         self.make_fft()
         self.shift_fft()
@@ -165,7 +160,7 @@ class Audio_Signal():
         self.print_notes()
 
 
-class KeyFinder(object):
+class KeyFinder():
     """Поиск тональности: функции для поиска тональности сигнала
     Предназначен для поиска тональности"""
     notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
@@ -184,14 +179,14 @@ class KeyFinder(object):
         self.sample_rate = sample_rate
         self.time_from = time_from
         self.time_to = time_to
-        self.y_segment = self.get_part_of_signal()
-        self.spectrogram = librosa.feature.chroma_stft(y=signal, sr=sample_rate, n_chroma=12, n_fft=2048)
+        self.signal_segment = self.get_part_of_signal()
+
+        self.spectrogram = librosa.feature.chroma_stft(y=self.signal_segment, sr=sample_rate, n_chroma=12, n_fft=2048)
 
         # spectr_values мощность нот сигнала на spectrogram в заданном временном интервале
         self.spectr_values = []
         for i in range(12):
             self.spectr_values.append(np.sum(self.spectrogram[i]))
-        # notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B']
 
         # словарь связывающий название ноты с соответствующей мощностью (интенсивностью в песне)
         self.dict_notes_freq = {self.notes[i]: self.spectr_values[i] for i in range(12)}
@@ -244,12 +239,14 @@ class KeyFinder(object):
 
     # печать отношения значения каждой мощности ноты к максимальному значению мощности
     def print_spectr(self):
+        print("Отношения значений каждой мощности ноты к максимальному полученному значению мощности")
         spectr_max = max(self.spectr_values)
         for key, spectr in self.dict_notes_freq.items():
             print(key, '\t', f'{spectr / spectr_max:5.3f}')
 
     # печать таблицы коэффициентов корреляции для каждой тональности
     def corr_table(self):
+        print("Таблица коэффициентов корреляции для каждой тональности")
         for key, corr in self.dict_keys.items():
             print(key, '\t', f'{corr:6.3f}')
 
@@ -259,7 +256,7 @@ class KeyFinder(object):
         if self.alt_key is not None:
             print("Альтернативаная тональность: ", self.alt_key, ", корреляция: ", self.alt_best_corr, sep='')
 
-    # печать хромограммы
+    # печать спектрограммы
     def plot_spectrogram(self, title=None):
         C = librosa.feature.chroma_cqt(y=self.signal, sr=self.sample_rate, bins_per_octave=24)
         plt.figure(figsize=(12, 4))
@@ -271,3 +268,10 @@ class KeyFinder(object):
         plt.colorbar()
         plt.tight_layout()
         plt.show()
+
+    # запуск пакета обработки и поиска тональностей
+    def key_finder_run(self):
+        self.print_spectr()
+        self.corr_table()
+        self.print_key()
+        self.plot_spectrogram("Спектрограмма сигнала")
