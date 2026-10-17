@@ -1,9 +1,22 @@
-# [Private] Musical Note and Key Analysis (2022)
+# Musical Note and Key Analysis (2022)
 
-**Система анализа звукового сигнала с помощью БПФ.**
+[English](README.md) | [Русский](README.ru.md)
 
-В результате анализа определяются основные характеристики звукового сигнала:
-- основные частоты и, как следствие, ноты
-- тональность
+Python experiments in audio signal analysis using the fast Fourier transform (FFT). The code finds dominant frequencies and musical notes, and estimates the key of an audio signal.
 
-Система реализована с помощью библиотек librosa, numphy 
+## Methods and tools
+
+- Waveform and spectrum plots.
+- FFT, window functions and Welch power spectral density.
+- Spectral peak detection and conversion from frequencies to notes.
+- Key estimation from chroma features and major/minor profile correlations.
+
+Built with librosa, NumPy, SciPy, Matplotlib and PeakUtils. Dependency versions are listed in [requirements.txt](requirements.txt).
+
+## Project files
+
+| Path | Purpose |
+| --- | --- |
+| [app/classes.py](app/classes.py) | `AudioHandler` for signal analysis and `KeyFinder` for key estimation |
+| [app/main.py](app/main.py) | Audio loading and analysis examples |
+| [app/audio](app/audio) | Three audio samples used by the experiments |
